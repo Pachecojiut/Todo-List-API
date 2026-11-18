@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from app.schemas import TokenResponse, UserRegister
+from app.schemas import TokenResponse, UserRegister, UserLogin
 from app.database import get_connection
-from app.security import hash_password, create_token
+from app.security import hash_password, create_token, verify_password
 
 rota = APIRouter()
 
@@ -19,6 +19,20 @@ def user_registro(dados: UserRegister):
         id_user = cursor.lastrowid
         token = create_token(id_user)
         conexao.commit()
+        return {'token': token}
+    finally:
+        conexao.close()
+
+@rota.post('/login', response_model=TokenResponse)
+def user_login(dados: UserLogin):
+    conexao = get_connection()
+    try:
+        cursor = conexao.cursor()
+        cursor.execute('SELECT id, password_hash FROM users WHERE email = %s', (dados.email,))
+        usuario = cursor.fetchone()
+        if not usuario or not verify_password(dados.password, usuario['password_hash']):
+            raise HTTPException(status_code=401, detail='E-mail ou senha inválidos')
+        token = create_token(usuario['id'])
         return {'token': token}
     finally:
         conexao.close()
