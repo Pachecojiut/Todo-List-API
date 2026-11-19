@@ -23,4 +23,11 @@ def create_token(user_id: int) -> str:
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return token
 
+def decode_token(token: int) -> None:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None
+    return int(payload['sub'])
+
 
