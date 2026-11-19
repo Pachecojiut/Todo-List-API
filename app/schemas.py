@@ -11,3 +11,14 @@ class UserLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     token: str
+
+#! criando os moldes de dados
+
+class TodoCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+
+class TodoResponse(BaseModel):
+    id: int
+    title: str
+    description: str | None = None
