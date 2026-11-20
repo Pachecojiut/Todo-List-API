@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from app.schemas import TodoCreate, TodoResponse, TodoListResponse
 from app.database import get_connection
 from app.dependencies import get_current_user_id
@@ -40,6 +40,31 @@ def listar_todos(
         'page': page,
         'limit': limit,
         'total': total,}
+    finally:
+        conexao.close()
+
+@rota.put('/todos/{todo_id}', response_model=TodoResponse)
+def atualizar_todo(
+    todo_id: int,
+    dados: TodoCreate,
+    user_id: int = Depends(get_current_user_id)
+):
+    conexao = get_connection()
+    try:
+        cursor = conexao.cursor()
+        cursor.execute('SELECT user_id FROM todos WHERE id = %s', (todo_id,))
+        tarefa = cursor.fetchone()
+        if tarefa is None:
+            raise HTTPException(status_code=404, detail='Tarefa não encontrada')
+        if tarefa['user_id'] != user_id:
+            raise HTTPException(status_code=403, detail='Você não pode alterar esta tarefa')
+        cursor.execute('UPDATE todos SET title = %s, description = %s WHERE id = %s AND user_id = %s', (dados.title, dados.description, todo_id, user_id))
+        conexao.commit()
+        return {
+            'id': todo_id,
+            'title': dados.title,
+            'description': dados.description
+        }
     finally:
         conexao.close()
 
