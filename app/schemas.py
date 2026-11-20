@@ -22,3 +22,10 @@ class TodoResponse(BaseModel):
     id: int
     title: str
     description: str | None = None
+
+
+class TodoListResponse(BaseModel):
+    data: list[TodoResponse]
+    page: int
+    limit: int
+    total: int
