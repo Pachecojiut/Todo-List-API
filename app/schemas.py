@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
+from typing import Literal
 
 class UserRegister(BaseModel):
     name: str = Field(min_length=1, max_length=255)
@@ -17,11 +18,13 @@ class TokenResponse(BaseModel):
 class TodoCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = None
+    status: Literal['todo', 'in_progress', 'done'] = 'todo'
 
 class TodoResponse(BaseModel):
     id: int
     title: str
     description: str | None = None
+    status: str
 
 
 class TodoListResponse(BaseModel):

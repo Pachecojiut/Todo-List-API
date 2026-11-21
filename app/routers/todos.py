@@ -13,12 +13,13 @@ def criar_todo(
     conexao = get_connection()
     try:
         cursor = conexao.cursor()
-        cursor.execute('INSERT INTO todos (user_id, title, description) VALUES (%s, %s, %s)', (user_id, dados.title, dados.description))
+        cursor.execute('INSERT INTO todos (user_id, title, description, status) VALUES (%s, %s, %s, %s)', (user_id, dados.title, dados.description, dados.status))
         todo_id = cursor.lastrowid
         conexao.commit()
         return {'id': todo_id,
                 'title': dados.title,
-                'description': dados.description}
+                'description': dados.description,
+                'status': dados.status}
     finally:
         conexao.close()
 
@@ -32,9 +33,9 @@ def listar_todos(
     try:
         cursor = conexao.cursor()
         offset = (page - 1) * limit
-        cursor.execute('SELECT id, title, description FROM todos WHERE user_id = %s ORDER BY id LIMIT %s OFFSET %s', (user_id, limit, offset),)
+        cursor.execute('SELECT id, title, description, status FROM todos WHERE user_id = %s ORDER BY id LIMIT %s OFFSET %s', (user_id, limit, offset),)
         todos = cursor.fetchall()
-        cursor.execute('SELECT COUNT(*) AS total FROM todos WHERE user_id = %s', (user_id,)),
+        cursor.execute('SELECT COUNT(*) AS total FROM todos WHERE user_id = %s', (user_id,))
         total = cursor.fetchone()['total']
         return {'data': todos,
         'page': page,
@@ -58,12 +59,13 @@ def atualizar_todo(
             raise HTTPException(status_code=404, detail='Task not found')
         if tarefa['user_id'] != user_id:
             raise HTTPException(status_code=403, detail='Forbidden')
-        cursor.execute('UPDATE todos SET title = %s, description = %s WHERE id = %s AND user_id = %s', (dados.title, dados.description, todo_id, user_id))
+        cursor.execute('UPDATE todos SET title = %s, description = %s, status = %s WHERE id = %s AND user_id = %s', (dados.title, dados.description, dados.status, todo_id, user_id))
         conexao.commit()
         return {
             'id': todo_id,
             'title': dados.title,
-            'description': dados.description
+            'description': dados.description,
+            'status': dados.status
         }
     finally:
         conexao.close()
