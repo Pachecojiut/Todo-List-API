@@ -5,7 +5,7 @@ from app.dependencies import get_current_user_id
 
 rota = APIRouter()
 
-@rota.post('/todos', status_code=201, response_model=TodoResponse)
+@rota.post('/todos', status_code=201, response_model=TodoResponse)          #* ROTA PARA INSERIR/CRIAR TAREFAS
 def criar_todo(
     dados: TodoCreate,
     user_id: int = Depends(get_current_user_id)
@@ -22,7 +22,7 @@ def criar_todo(
     finally:
         conexao.close()
 
-@rota.get('/todos', response_model=TodoListResponse)
+@rota.get('/todos', response_model=TodoListResponse)    #* ROTA PARA LISTAR AS TAREFAS
 def listar_todos(
     page: int = Query(1, ge=1),
     limit: int= Query(10, ge=1, le=100),
@@ -43,7 +43,7 @@ def listar_todos(
     finally:
         conexao.close()
 
-@rota.put('/todos/{todo_id}', response_model=TodoResponse)
+@rota.put('/todos/{todo_id}', response_model=TodoResponse)     #* ROTA PARA ATUALIZAR UMA TAREFA
 def atualizar_todo(
     todo_id: int,
     dados: TodoCreate,
@@ -55,9 +55,9 @@ def atualizar_todo(
         cursor.execute('SELECT user_id FROM todos WHERE id = %s', (todo_id,))
         tarefa = cursor.fetchone()
         if tarefa is None:
-            raise HTTPException(status_code=404, detail='Tarefa não encontrada')
+            raise HTTPException(status_code=404, detail='Task not found')
         if tarefa['user_id'] != user_id:
-            raise HTTPException(status_code=403, detail='Você não pode alterar esta tarefa')
+            raise HTTPException(status_code=403, detail='Forbidden')
         cursor.execute('UPDATE todos SET title = %s, description = %s WHERE id = %s AND user_id = %s', (dados.title, dados.description, todo_id, user_id))
         conexao.commit()
         return {
@@ -68,3 +68,21 @@ def atualizar_todo(
     finally:
         conexao.close()
 
+@rota.delete('/todos/{todo_id}', status_code=204)       #* ROTA PARA DELETAR UMA TAREFA
+def delete_todo(
+    todo_id: int,
+    user_id: int = Depends(get_current_user_id)
+):
+    conexao = get_connection()
+    try:
+        cursor = conexao.cursor()
+        cursor.execute('SELECT user_id FROM todos WHERE id = %s', (todo_id,))
+        tarefa = cursor.fetchone()
+        if tarefa is None:
+            raise HTTPException(status_code=404, detail='Task not found')
+        if tarefa['user_id'] != user_id:
+            raise HTTPException(status_code=403, detail='Forbidden')
+        cursor.execute('DELETE FROM todos WHERE id = %s AND user_id = %s', (todo_id, user_id,))
+        conexao.commit()
+    finally:
+        conexao.close()
