@@ -29,6 +29,8 @@ def listar_todos(
     page: int = Query(1, ge=1),
     limit: int= Query(10, ge=1, le=100),
     status: Literal['todo', 'in_progress', 'done'] | None = None,
+    sort_by: Literal['id', 'title', 'created_at'] = 'id',
+    order: Literal['asc', 'desc'] = 'asc',
     user_id: int= Depends(get_current_user_id)
 ):
     conexao = get_connection()
@@ -40,7 +42,8 @@ def listar_todos(
         if status:
             where += ' AND status = %s'
             params.append(status)
-        cursor.execute(f'SELECT id, title, description, status FROM todos WHERE {where} ORDER BY id LIMIT %s OFFSET %s', tuple(params + [limit, offset]))
+        cursor.execute(f'SELECT id, title, description, status FROM todos WHERE {where}'
+                        f' ORDER BY {sort_by} {order}, id LIMIT %s OFFSET %s', tuple(params + [limit, offset]))
         todos = cursor.fetchall()
         cursor.execute(f'SELECT COUNT(*) AS total FROM todos WHERE {where}', tuple(params))
         total = cursor.fetchone()['total']
