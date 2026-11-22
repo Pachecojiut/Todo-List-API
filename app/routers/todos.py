@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from app.schemas import TodoCreate, TodoResponse, TodoListResponse
 from app.database import get_connection
 from app.dependencies import get_current_user_id
+from typing import Literal
 
 rota = APIRouter()
 
@@ -27,15 +28,21 @@ def criar_todo(
 def listar_todos(
     page: int = Query(1, ge=1),
     limit: int= Query(10, ge=1, le=100),
+    status: Literal['todo', 'in_progress', 'done'] | None = None,
     user_id: int= Depends(get_current_user_id)
 ):
     conexao = get_connection()
     try:
         cursor = conexao.cursor()
         offset = (page - 1) * limit
-        cursor.execute('SELECT id, title, description, status FROM todos WHERE user_id = %s ORDER BY id LIMIT %s OFFSET %s', (user_id, limit, offset),)
+        where = 'user_id = %s'
+        params = [user_id]
+        if status:
+            where += ' AND status = %s'
+            params.append(status)
+        cursor.execute(f'SELECT id, title, description, status FROM todos WHERE {where} ORDER BY id LIMIT %s OFFSET %s', tuple(params + [limit, offset]))
         todos = cursor.fetchall()
-        cursor.execute('SELECT COUNT(*) AS total FROM todos WHERE user_id = %s', (user_id,))
+        cursor.execute(f'SELECT COUNT(*) AS total FROM todos WHERE {where}', tuple(params))
         total = cursor.fetchone()['total']
         return {'data': todos,
         'page': page,
