@@ -5,7 +5,7 @@ from app.security import hash_password, create_token, verify_password
 
 rota = APIRouter()
 
-@rota.post('/register', status_code=201, response_model=TokenResponse)
+@rota.post('/register', status_code=201, response_model=TokenResponse, summary="Register a new user", tags=["Auth"])
 def user_registro(dados: UserRegister):
     conexao = get_connection()
     try:
@@ -23,7 +23,7 @@ def user_registro(dados: UserRegister):
     finally:
         conexao.close()
 
-@rota.post('/login', response_model=TokenResponse)
+@rota.post('/login', response_model=TokenResponse, summary="Log in and get a token", tags=["Auth"])
 def user_login(dados: UserLogin):
     conexao = get_connection()
     try:

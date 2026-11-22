@@ -6,7 +6,7 @@ from typing import Literal
 
 rota = APIRouter()
 
-@rota.post('/todos', status_code=201, response_model=TodoResponse)          #* ROTA PARA INSERIR/CRIAR TAREFAS
+@rota.post('/todos', status_code=201, response_model=TodoResponse, summary="Create a task", tags=["Todos"])          #* ROTA PARA INSERIR/CRIAR TAREFAS
 def criar_todo(
     dados: TodoCreate,
     user_id: int = Depends(get_current_user_id)
@@ -24,7 +24,7 @@ def criar_todo(
     finally:
         conexao.close()
 
-@rota.get('/todos', response_model=TodoListResponse)    #* ROTA PARA LISTAR AS TAREFAS
+@rota.get('/todos', response_model=TodoListResponse, summary="List tasks", tags=["Todos"])    #* ROTA PARA LISTAR AS TAREFAS
 def listar_todos(
     page: int = Query(1, ge=1),
     limit: int= Query(10, ge=1, le=100),
@@ -54,7 +54,7 @@ def listar_todos(
     finally:
         conexao.close()
 
-@rota.put('/todos/{todo_id}', response_model=TodoResponse)     #* ROTA PARA ATUALIZAR UMA TAREFA
+@rota.put('/todos/{todo_id}', response_model=TodoResponse, summary="Update a task", tags=["Todos"])     #* ROTA PARA ATUALIZAR UMA TAREFA
 def atualizar_todo(
     todo_id: int,
     dados: TodoCreate,
@@ -80,7 +80,7 @@ def atualizar_todo(
     finally:
         conexao.close()
 
-@rota.delete('/todos/{todo_id}', status_code=204)       #* ROTA PARA DELETAR UMA TAREFA
+@rota.delete('/todos/{todo_id}', status_code=204, summary="Delete a task", tags=["Todos"])       #* ROTA PARA DELETAR UMA TAREFA
 def delete_todo(
     todo_id: int,
     user_id: int = Depends(get_current_user_id)
