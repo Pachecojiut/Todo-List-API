@@ -8,6 +8,10 @@ load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
 
+if not SECRET_KEY or len('SECRET_KEY') < 32:
+    raise RuntimeError("SECRET_KEY ausente ou curta demais (mínimo 32 caracteres). "
+        "Gere uma com: python -c \"import secrets; print(secrets.token_hex(32))\"")
+
 def hash_password(password: str) -> str:
     password_bytes = password.encode('utf-8')
     salt = bcrypt.gensalt()
@@ -25,9 +29,11 @@ def create_token(user_id: int) -> str:
 
 def decode_token(token: int) -> None:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'], options={'require': ['exp', 'sub']},
+        )
+        return int(payload['sub'])
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return None
-    return int(payload['sub'])
+
 
 

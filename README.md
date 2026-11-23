@@ -8,7 +8,7 @@ Focado em autenticação, modelagem de banco de dados, design de API REST e segu
 ![Documentação Interativa da API](docs/imagens/swagger-overview.png)
 
 ---
-<!-- NOVO: índice -->
+
 # Índice
 
 - [Sobre o projeto](#todo-list-api)
@@ -57,14 +57,15 @@ Authorization: Bearer SEU_TOKEN_JWT
 
 # Segurança
 
-- **Senhas** guardadas apenas como hash bcrypt, com salt
-- **Tokens JWT** assinados (HS256) e com expiração de 30 minutos
+- **Senhas** guardadas apenas como hash bcrypt, com salt. O limite de 72 bytes do bcrypt é validado antes do hash, no cadastro e no login, para que senhas longas ou com acentos nunca causem erro interno
+- **Tokens JWT** assinados (HS256) e com expiração de 30 minutos. Tokens sem `exp` ou `sub`, ou com `sub` inválido, são rejeitados com 401
+- **Chave JWT obrigatória**: sem valor padrão. A aplicação não inicia se a `SECRET_KEY` estiver ausente ou tiver menos de 32 caracteres
 - **Segredos** (senha do banco e chave do JWT) em variáveis de ambiente, fora do repositório
-- **Consultas parametrizadas** em todo o SQL, contra SQL injection
+- **Valores sempre parametrizados** nas consultas SQL, contra SQL injection. As únicas partes dinâmicas da query (ordenação) vêm de listas fixas de valores permitidos, nunca direto do cliente
+- **E-mail único garantido pelo banco** (`UNIQUE`): cadastros simultâneos com o mesmo e-mail resultam em 409, sem erro interno
 - **Autorização por dono**: cada usuário só acessa as próprias tarefas
-- **Validação de entrada** com Pydantic, com limites de tamanho iguais aos do banco
+- **Validação de entrada** com Pydantic, com limites de tamanho compatíveis com o banco e rejeição de textos só com espaços
 - **Mensagem única no login**: não revela se o e-mail existe
-- **Ordenação com lista de valores permitidos**, para que nomes de coluna nunca venham direto do cliente
 ---
 
 ![Tabela users com password_hash](docs/imagens/database-users.png)
@@ -79,7 +80,6 @@ Authorization: Bearer SEU_TOKEN_JWT
 - bcrypt para hash de senhas
 - Pydantic para validação de dados
 
-<!-- NOVO: decisões técnicas -->
 # Decisões técnicas
 
 - Utilização de SQL puro para aprofundar o entendimento

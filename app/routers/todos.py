@@ -42,6 +42,13 @@ def listar_todos(
         if status:
             where += ' AND status = %s'
             params.append(status)
+            #! SEGURANÇA: este SQL usa f-string, mas só nas partes que não vêm livres do cliente:
+#? - `where` é montado só com trechos fixos escritos aqui no código.
+#? - `sort_by` e `order` fazem qualquer valor fora da lista ser recusado
+#?  pelo 422 antes de chegar a esta linha.
+#? Nome de coluna e direção do ORDER BY não podem ser parâmetros %s,
+#? por isso a lista de valores permitidos. Todos os VALORES (user_id, status,
+#? limit, offset) vão como parâmetros e nunca dentro da string  
         cursor.execute(f'SELECT id, title, description, status FROM todos WHERE {where}'
                         f' ORDER BY {sort_by} {order}, id LIMIT %s OFFSET %s', tuple(params + [limit, offset]))
         todos = cursor.fetchall()
