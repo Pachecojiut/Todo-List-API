@@ -1,3 +1,4 @@
+-- Active: 1795609198112@@127.0.0.1@3306@todo_test
 CREATE DATABASE IF NOT EXISTS todo_list_api;
 USE todo_list_api;
 
