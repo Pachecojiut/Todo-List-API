@@ -6,9 +6,9 @@ import os
 
 load_dotenv()
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-if not SECRET_KEY or len('SECRET_KEY') < 32:
+if not SECRET_KEY or len(SECRET_KEY) < 32:
     raise RuntimeError("SECRET_KEY ausente ou curta demais (mínimo 32 caracteres). "
         "Gere uma com: python -c \"import secrets; print(secrets.token_hex(32))\"")
 
